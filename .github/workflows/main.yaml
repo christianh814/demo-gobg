@@ -1,0 +1,86 @@
+name: Docker Image CI
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  build:
+    environment:
+      name: test
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+      issues: write
+      pull-requests: write
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          path: demo-gobg
+      - name: Set Variables
+        id: vars
+        run: |
+          cd ${GITHUB_WORKSPACE}/demo-gobg
+          echo ::set-output name=image_tag::$(echo $GITHUB_SHA  | cut -c1-6)
+          cd ${GITHUB_WORKSPACE}/demo-gobg
+          echo ::set-output name=commit_msg::$(git log -1 --pretty="%s")
+          cd -
+      - name: Login to DockerHub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build & push the Docker image
+        env:
+          IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/demo-gobg:${{ steps.vars.outputs.image_tag }}
+        run: |
+          cd ${GITHUB_WORKSPACE}/demo-gobg
+          docker build . --file Dockerfile --tag $IMAGE && docker push $IMAGE
+          # Make sure latest is always updated
+          docker tag $IMAGE ${{ secrets.DOCKERHUB_USERNAME }}/demo-gobg:latest
+          docker push ${{ secrets.DOCKERHUB_USERNAME }}/demo-gobg:latest
+          echo "Image should be accessible to your local machine (after docker login) by:"
+          echo "docker pull $IMAGE"
+          cd -
+      - name: Checkout Deploy Repo
+        uses: actions/checkout@v3
+        with:
+          repository: ${{ secrets.DEPLOY_REPOSITORY }}
+          token: ${{ secrets.MY_GITHUB_TOKEN }}
+          path: demo-deploy-gobg
+      - name: Set image on the dev overlay and commit
+        run: |
+          cd ${GITHUB_WORKSPACE}/demo-deploy-gobg/deploy/overlays/dev/
+          kustomize edit set image "${{ secrets.DOCKERHUB_USERNAME }}/demo-gobg:${{ steps.vars.outputs.image_tag }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          git config --global user.name "${{ github.actor }}"
+          git add -A .
+          git commit -am "Update image to ${{ steps.vars.outputs.image_tag }}"
+          git push origin main
+          cd ${GITHUB_WORKSPACE}
+      - name: Set image on the test overlay
+        run: |
+          cd ${GITHUB_WORKSPACE}/demo-deploy-gobg/deploy/overlays/test/
+          git pull
+          kustomize edit set image "${{ secrets.DOCKERHUB_USERNAME }}/demo-gobg:${{ steps.vars.outputs.image_tag }}"
+          cd ${GITHUB_WORKSPACE}
+      - name: Create Pull Request
+        uses: peter-evans/create-pull-request@v4
+        with:
+          path: demo-deploy-gobg
+          token: ${{ secrets.MY_GITHUB_TOKEN }}
+          commit-message: Update Image to ${{ steps.vars.outputs.image_tag }}
+          committer: GitHub Action Bot <noreply@github.com>
+          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          signoff: false
+          branch: ${{ steps.vars.outputs.image_tag }}
+          delete-branch: true
+          title: '[PR Bot] Update image to ${{ steps.vars.outputs.image_tag }}'
+          body: |
+            Update:
+            - Updated image to ${{ steps.vars.outputs.image_tag }}
+            - Image has commit message: ${{ steps.vars.outputs.commit_msg }}
+          draft: false
+##
+##
