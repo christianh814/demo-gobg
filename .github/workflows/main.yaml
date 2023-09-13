@@ -36,7 +36,8 @@ jobs:
           IMAGE: ${{ secrets.DOCKERHUB_USERNAME }}/demo-gobg:${{ steps.vars.outputs.image_tag }}
         run: |
           cd ${GITHUB_WORKSPACE}/demo-gobg
-          docker build . --file Dockerfile --tag $IMAGE && docker push $IMAGE
+          docker build . --file Dockerfile --tag $IMAGE 
+          docker push $IMAGE
           # Make sure latest is always updated
           docker tag $IMAGE ${{ secrets.DOCKERHUB_USERNAME }}/demo-gobg:latest
           docker push ${{ secrets.DOCKERHUB_USERNAME }}/demo-gobg:latest
