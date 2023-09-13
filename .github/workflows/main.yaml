@@ -53,8 +53,8 @@ jobs:
         run: |
           cd ${GITHUB_WORKSPACE}/demo-deploy-gobg/deploy/overlays/dev/
           kustomize edit set image "${{ secrets.DOCKERHUB_USERNAME }}/demo-gobg:${{ steps.vars.outputs.image_tag }}"
-          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
-          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com'"
+          git config --global user.name "github-actions[bot]"
           git add -A .
           git commit -am "Update image to ${{ steps.vars.outputs.image_tag }}"
           git push origin main
@@ -71,8 +71,8 @@ jobs:
           path: demo-deploy-gobg
           token: ${{ secrets.MY_GITHUB_TOKEN }}
           commit-message: Update Image to ${{ steps.vars.outputs.image_tag }}
-          committer: GitHub Action Bot <noreply@github.com>
-          author: ${{ github.actor }} <${{ github.actor }}@users.noreply.github.com>
+          committer: GitHub Action Bot <github-actions[bot]@users.noreply.github.com>
+          author: github-actions[bot] <github-actions[bot]@users.noreply.github.com>
           signoff: false
           branch: ${{ steps.vars.outputs.image_tag }}
           delete-branch: true
