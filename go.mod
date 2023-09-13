@@ -3,7 +3,6 @@ module github.com/christianh814/demo-gobg
 go 1.21.1
 
 require (
-	github.com/christianh814/gobg v0.0.0-20230620174852-1b286b855358
 	github.com/gorilla/handlers v1.5.1
 	github.com/gorilla/mux v1.8.0
 	github.com/sirupsen/logrus v1.9.3
