@@ -20,6 +20,10 @@ stages:
     pool:
       vmImage: ubuntu-latest
     steps:
+    - task: KubectlInstaller@0
+      displayName: Install Kubernetes support tools
+      inputs:
+        kubectlVersion: 1.28.2
     - script: |
         echo $sourceVersion
         commitHash=${sourceVersion:0:7}
@@ -46,7 +50,13 @@ stages:
     - script: |
         AUTH=$(githubPAT)
         git clone https://christianh814:${AUTH}@github.com/christianh814/demo-deploy-gobg
-      displayName: Clone deployment repo
+        cd ./demo-deploy-gobg/deploy/overlays/dev/
+        kustomize edit set image christianh814/demo-gobg:$(commitHash)
+        git add -A .
+        git commit -am "Update image to $(commitHash)"
+        git push origin main
+        cd -
+      displayName: Clone deployment repo and commit to dev overlay
       workingDirectory: $(Build.SourcesDirectory)
     - script: |
         tree demo-deploy-gobg
