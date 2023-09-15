@@ -9,7 +9,7 @@ trigger:
     - main
 
 resources:
-- repo: self
+- repo: self  
 
 stages:
 - stage: Build
@@ -43,3 +43,12 @@ stages:
         tags: |
           $(commitHash)
           latest
+    - script: |
+        AUTH=$(githubPAT)
+        git -c http.github.com/christianh814/demo-deploy-gobg.extraheader="AUTHORIZATION: basic $AUTH" clone github.com/christianh814/demo-deploy-gobg
+      displayName: Clone deployment repo
+      workingDirectory: $(Build.SourcesDirectory)
+    - script: |
+        tree demo-deploy-gobg
+      displayName: checking dir
+      workingDirectory: $(Build.SourcesDirectory)
