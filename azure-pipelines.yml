@@ -48,6 +48,8 @@ stages:
           $(commitHash)
           latest
     - script: |
+        git config --global user.email "christian.hernandez@yahoo.com"
+        git config --global user.name "christianh814"
         AUTH=$(githubPAT)
         git clone https://christianh814:${AUTH}@github.com/christianh814/demo-deploy-gobg
         cd ./demo-deploy-gobg/deploy/overlays/dev/
