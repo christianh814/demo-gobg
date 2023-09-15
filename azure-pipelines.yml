@@ -61,6 +61,12 @@ stages:
       displayName: Clone deployment repo and commit to dev overlay
       workingDirectory: $(Build.SourcesDirectory)
     - script: |
-        tree demo-deploy-gobg
-      displayName: checking dir
+        cd ./demo-deploy-gobg/deploy/overlays/test
+        git config --global user.email "christian.hernandez@yahoo.com"
+        git config --global user.name "christianh814"
+        GITHUB_TOKEN=$(githubPAT)
+        git pull
+        kustomize edit set image christianh814/demo-gobg:$(commitHash)
+        gh pr create --title "Update image to $(commitHash)" --body "This updates the TEST env with image tag $(commitHash)" --base main
+      displayName: Set image on the test overlay and create PR
       workingDirectory: $(Build.SourcesDirectory)
