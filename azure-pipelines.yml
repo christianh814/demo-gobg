@@ -45,7 +45,7 @@ stages:
           latest
     - script: |
         AUTH=$(githubPAT)
-        git -c http.github.com/christianh814/demo-deploy-gobg.extraheader="AUTHORIZATION: basic $AUTH" clone github.com/christianh814/demo-deploy-gobg
+        git clone https://christianh814:${AUTH}@github.com/christianh814/demo-deploy-gobg
       displayName: Clone deployment repo
       workingDirectory: $(Build.SourcesDirectory)
     - script: |
