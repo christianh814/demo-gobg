@@ -23,7 +23,10 @@ stages:
     - task: Docker@2
       displayName: Build an image
       inputs:
-        command: build
-        dockerfile: '$(Build.SourcesDirectory)/Dockerfile'
+        containerRegistry: 'Christian Hernandez Dockerhub'
+        repository: 'christianh814/demo-gobg'
+        command: 'build'
+        Dockerfile: '**/Dockerfile'
         tags: |
           $(tag)
+          latest
