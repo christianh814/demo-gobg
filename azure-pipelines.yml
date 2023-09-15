@@ -64,9 +64,13 @@ stages:
         cd ./demo-deploy-gobg/deploy/overlays/test
         git config --global user.email "christian.hernandez@yahoo.com"
         git config --global user.name "christianh814"
-        GH_TOKEN=$(githubPAT)
+        export GH_TOKEN=$(githubPAT)
         git pull
         kustomize edit set image christianh814/demo-gobg:$(commitHash)
-        gh pr create --title "Update image to $(commitHash)" --body "This updates the TEST env with image tag $(commitHash)" --base main
+        git checkout -b $(commitHash)
+        git add -A .
+        git commit -am "Update image on TEST to $(commitHash)"
+        git push origin $(commitHash)
+        gh pr create --title "[PR Bot] Update image to $(commitHash)" --body "This updates the TEST env with image tag $(commitHash)" --base main
       displayName: Set image on the test overlay and create PR
       workingDirectory: $(Build.SourcesDirectory)
